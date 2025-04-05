@@ -1,0 +1,87 @@
+Starting setup process at 2025-04-05 15:57:03
+[2025-04-05 15:57:03] Including database connection file...
+[2025-04-05 15:57:03] Creating database connection...
+[2025-04-05 15:57:03] Database connection established successfully.
+[2025-04-05 15:57:03] Enabling foreign key constraints...
+[2025-04-05 15:57:03] Foreign key constraints enabled.
+[2025-04-05 15:57:03] Starting transaction...
+[2025-04-05 15:57:03] Transaction started successfully.
+[2025-04-05 15:57:03] Creating users table...
+[2025-04-05 15:57:03] Users table created successfully.
+[2025-04-05 15:57:03] Creating categories table...
+[2025-04-05 15:57:03] Categories table created successfully.
+[2025-04-05 15:57:03] Creating brands table...
+[2025-04-05 15:57:03] Brands table created successfully.
+[2025-04-05 15:57:03] Creating products table...
+[2025-04-05 15:57:03] Products table created successfully.
+[2025-04-05 15:57:03] Creating product_category table...
+[2025-04-05 15:57:03] Product_category table created successfully.
+[2025-04-05 15:57:03] Creating product_specifications table...
+[2025-04-05 15:57:03] Product_specifications table created successfully.
+[2025-04-05 15:57:03] Creating product_images table...
+[2025-04-05 15:57:03] Product_images table created successfully.
+[2025-04-05 15:57:03] Creating orders table...
+[2025-04-05 15:57:03] Orders table created successfully.
+[2025-04-05 15:57:03] Creating order_items table...
+[2025-04-05 15:57:03] Order_items table created successfully.
+[2025-04-05 15:57:03] Creating reviews table...
+[2025-04-05 15:57:03] Reviews table created successfully.
+[2025-04-05 15:57:03] Creating wishlist table...
+[2025-04-05 15:57:03] Wishlist table created successfully.
+[2025-04-05 15:57:03] Creating cart table...
+[2025-04-05 15:57:03] Cart table created successfully.
+[2025-04-05 15:57:03] Creating news table...
+[2025-04-05 15:57:03] News table created successfully.
+[2025-04-05 15:57:03] Inserting sample categories...
+[2025-04-05 15:57:03] Inserted category: Composants électroniques
+[2025-04-05 15:57:03] Inserted category: Automatismes industriels
+[2025-04-05 15:57:03] Inserted category: Outillage
+[2025-04-05 15:57:03] Inserted category: Électricité
+[2025-04-05 15:57:03] Inserted category: Connectique
+[2025-04-05 15:57:03] Inserted category: Mécanique
+[2025-04-05 15:57:03] Inserting sample brands...
+[2025-04-05 15:57:03] Inserted brand: Schneider Electric
+[2025-04-05 15:57:03] Inserted brand: ABB
+[2025-04-05 15:57:03] Inserted brand: Siemens
+[2025-04-05 15:57:03] Inserted brand: Arduino
+[2025-04-05 15:57:03] Inserted brand: Texas Instruments
+[2025-04-05 15:57:03] Inserted brand: STMicroelectronics
+[2025-04-05 15:57:03] Inserted brand: RS PRO
+[2025-04-05 15:57:03] Inserting sample products...
+[2025-04-05 15:57:03] Inserted product: Microcontrôleur STM32F411RE Nucleo-64
+[2025-04-05 15:57:03] Inserted product: Kit Arduino Uno Rev3
+[2025-04-05 15:57:03] Inserted product: Variateur de fréquence 2.2kW
+[2025-04-05 15:57:03] Inserted product: Multimètre numérique RS PRO
+[2025-04-05 15:57:03] Inserted product: Kit de condensateurs céramiques 100 pcs
+[2025-04-05 15:57:03] Inserted product: Transistor NPN BC547 - Lot de 50
+[2025-04-05 15:57:03] Associating products with categories...
+[2025-04-05 15:57:03] Associated product ID 1 with category ID 1
+[2025-04-05 15:57:03] Associated product ID 2 with category ID 1
+[2025-04-05 15:57:03] Associated product ID 3 with category ID 2
+[2025-04-05 15:57:03] Associated product ID 4 with category ID 3
+[2025-04-05 15:57:03] Associated product ID 5 with category ID 1
+[2025-04-05 15:57:03] Associated product ID 6 with category ID 1
+[2025-04-05 15:57:03] Inserting product specifications...
+[2025-04-05 15:57:03] Added specification 'Microcontrôleur' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Architecture' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Fréquence' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Mémoire Flash' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Mémoire RAM' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Tension d'alimentation' for product ID 1
+[2025-04-05 15:57:03] Added specification 'GPIO' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Interfaces' for product ID 1
+[2025-04-05 15:57:03] Added specification 'Dimensions' for product ID 1
+[2025-04-05 15:57:03] Inserting sample news...
+[2025-04-05 15:57:03] Inserted news: Nouvelle gamme de composants électroniques
+[2025-04-05 15:57:03] Inserted news: Promotions du printemps
+[2025-04-05 15:57:03] Inserted news: Webinaire : Automatisation industrielle
+[2025-04-05 15:57:03] Inserted news: Nouveau catalogue 2024
+[2025-04-05 15:57:03] Inserted news: Formation Arduino : Session de printemps
+[2025-04-05 15:57:03] Inserted news: Lancement de notre nouvelle application mobile
+[2025-04-05 15:57:03] Inserted news: Nouveau centre de distribution
+[2025-04-05 15:57:03] Inserted news: Partenariat avec Raspberry Pi
+[2025-04-05 15:57:03] Inserted news: Fêtez Noël avec nos offres spéciales
+[2025-04-05 15:57:03] Inserted news: Nouvelle gamme de capteurs IoT
+[2025-04-05 15:57:03] Committing transaction...
+[2025-04-05 15:57:03] Transaction committed successfully.
+[2025-04-05 15:57:03] Database setup completed successfully.
