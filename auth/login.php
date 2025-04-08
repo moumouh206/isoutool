@@ -2,7 +2,7 @@
 require_once '../includes/init.php';
 
 $errors = [];
-$success = false;
+$login_success = false;
 
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
@@ -14,20 +14,21 @@ if (isset($_SESSION['user_id'])) {
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : '../index.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get and validate login data
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     
-    // Validate input
     if (empty($email)) {
         $errors[] = 'Email is required';
     }
+    
     if (empty($password)) {
         $errors[] = 'Password is required';
     }
     
+    // If no errors, attempt login
     if (empty($errors)) {
         try {
-            // Get user by email
             $stmt = $db->prepare('SELECT id, email, password, first_name, last_name FROM users WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,15 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Login successful
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_email'] = $user['email'];
-                $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['user_first_name'] = $user['first_name'];
+                $_SESSION['user_last_name'] = $user['last_name'];
                 
                 // Transfer cart items if any
                 if (isset($cart)) {
                     $cart->transferSessionCartToUser($user['id']);
                 }
                 
-                // Redirect to the requested page or home
-                header('Location: ' . $redirect);
+                // Redirect to home page or dashboard
+                header('Location: ' . SITE_URL);
                 exit;
             } else {
                 $errors[] = 'Invalid email or password';

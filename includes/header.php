@@ -21,8 +21,13 @@
                 <a href="#" class="text-sm hover:underline">Nous contacter</a>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="<?= SITE_URL ?>/auth/register.php" class="text-sm hover:underline">Créer un compte</a>
-                <a href="<?= SITE_URL ?>/auth/login.php" class="text-sm hover:underline">Se connecter</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="text-sm">Bonjour, <?= htmlspecialchars($_SESSION['user_first_name'] ?? 'utilisateur') ?></span>
+                    <a href="<?= SITE_URL ?>/auth/logout.php" class="text-sm hover:underline">Se déconnecter</a>
+                <?php else: ?>
+                    <a href="<?= SITE_URL ?>/auth/register.php" class="text-sm hover:underline">Créer un compte</a>
+                    <a href="<?= SITE_URL ?>/auth/login.php" class="text-sm hover:underline">Se connecter</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -39,15 +44,15 @@
 
                 <!-- Search Bar -->
                 <div class="flex-1 mx-8">
-                    <div class="relative w-full">
-                        <input type="text" placeholder="Rechercher des produits, des marques, des références..."
+                    <form action="<?= SITE_URL ?>/search.php" method="GET" class="relative w-full">
+                        <input type="text" name="q" placeholder="Rechercher des produits, des marques, des références..."
                                class="w-full py-2 px-4 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-rs-red">
-                        <button class="absolute right-0 top-0 bottom-0 bg-rs-red text-white px-4 rounded-r hover:bg-red-700 transition flex items-center">
+                        <button type="submit" class="absolute right-0 top-0 bottom-0 bg-rs-red text-white px-4 rounded-r hover:bg-red-700 transition flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                             </svg>
                         </button>
-                    </div>
+                    </form>
                 </div>
 
                 <!-- Navigation Icons -->
@@ -62,7 +67,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                         </svg>
                     </a>
-                    <button class="md:hidden text-rs-gray hover:text-rs-red">
+                    <button class="md:hidden text-rs-gray hover:text-rs-red" id="mobile-menu-button">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
@@ -104,13 +109,15 @@
     <!-- Mobile Search (visible on mobile only) -->
     <div class="md:hidden p-4 bg-white border-t border-gray-200">
         <div class="relative">
-            <input type="text" placeholder="Rechercher..."
-                   class="w-full py-2 px-4 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-rs-red">
-            <button class="absolute right-0 top-0 bottom-0 bg-rs-red text-white px-4 rounded-r hover:bg-red-700 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-            </button>
+            <form action="<?= SITE_URL ?>/search.php" method="GET" class="relative w-full">
+                <input type="text" name="q" placeholder="Rechercher..."
+                       class="w-full py-2 px-4 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-rs-red">
+                <button type="submit" class="absolute right-0 top-0 bottom-0 bg-rs-red text-white px-4 rounded-r hover:bg-red-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -125,6 +132,12 @@
             <li><a href="#" class="block px-4 py-2 hover:bg-rs-light-gray">Services</a></li>
             <li><a href="#" class="block px-4 py-2 hover:bg-rs-light-gray">Centre d'aide</a></li>
             <li><a href="#" class="block px-4 py-2 hover:bg-rs-light-gray">Nous contacter</a></li>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <li><a href="<?= SITE_URL ?>/auth/logout.php" class="block px-4 py-2 hover:bg-rs-light-gray">Se déconnecter</a></li>
+            <?php else: ?>
+                <li><a href="<?= SITE_URL ?>/auth/login.php" class="block px-4 py-2 hover:bg-rs-light-gray">Se connecter</a></li>
+                <li><a href="<?= SITE_URL ?>/auth/register.php" class="block px-4 py-2 hover:bg-rs-light-gray">Créer un compte</a></li>
+            <?php endif; ?>
         </ul>
     </div>
 

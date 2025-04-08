@@ -1,10 +1,10 @@
 <?php
-require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/config/config.php';
 
 $page_title = "Nous contacter";
 $page_description = "Contactez l'équipe RS Components France pour toute question ou demande d'assistance";
 
-include_once __DIR__ . '/../includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="container mx-auto px-4 py-8">
@@ -199,4 +199,4 @@ include_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include_once __DIR__ . '/../includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>

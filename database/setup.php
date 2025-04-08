@@ -58,6 +58,7 @@ try {
             postal_code VARCHAR(20),
             country VARCHAR(100),
             account_type VARCHAR(20) DEFAULT "customer",
+            is_admin TINYINT(1) NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB

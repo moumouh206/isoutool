@@ -1,124 +1,114 @@
 <?php
-require_once __DIR__ . '/includes/init.php';
-
-$page_title = "Recherche";
-$page_description = "Recherchez parmi nos produits";
+require_once 'includes/init.php';
 
 // Get search query
-$query = isset($_GET['q']) ? trim($_GET['q']) : '';
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$per_page = 12;
-$offset = ($page - 1) * $per_page;
+$search_query = htmlspecialchars($_GET['q'] ?? '');
+$page_title = 'Recherche: ' . $search_query;
+$breadcrumbs = ['Recherche' => null];
 
-// Build search query
-$search_query = "
-    SELECT p.*, b.name as brand_name, b.slug as brand_slug,
-           GROUP_CONCAT(DISTINCT c.name) as category_names
-    FROM products p
-    LEFT JOIN brands b ON p.brand_id = b.id
-    LEFT JOIN product_category pc ON p.id = pc.product_id
-    LEFT JOIN categories c ON pc.category_id = c.id
-    WHERE p.name LIKE :query OR p.description LIKE :query OR p.reference LIKE :query
-    GROUP BY p.id, p.reference, p.name, p.slug, p.description, p.price, p.stock, p.featured, b.name, b.slug
-    ORDER BY p.name ASC
-    LIMIT :offset, :per_page
-";
+// Initialize products array
+$products = [];
 
-$params = [
-    ':query' => "%$query%",
-    ':offset' => $offset,
-    ':per_page' => $per_page
-];
+// If we have a search query, search for products
+if (!empty($search_query)) {
+    try {
+        // Search in products table (this query depends on your database structure)
+        $stmt = $db->prepare("
+            SELECT * FROM products 
+            WHERE name LIKE :search 
+            OR description LIKE :search 
+            OR reference LIKE :search
+            OR brand LIKE :search
+            LIMIT 20
+        ");
+        $stmt->execute(['search' => '%' . $search_query . '%']);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        // Handle error (log it, but don't show to user)
+        error_log("Search error: " . $e->getMessage());
+    }
+}
 
-// Get total count
-$count_query = "
-    SELECT COUNT(DISTINCT p.id) as total
-    FROM products p
-    WHERE p.name LIKE :query OR p.description LIKE :query OR p.reference LIKE :query
-";
-
-$stmt = $db->prepare($count_query);
-$stmt->execute([':query' => "%$query%"]);
-$total_products = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-$total_pages = ceil($total_products / $per_page);
-
-// Get products
-$stmt = $db->prepare($search_query);
-$stmt->execute($params);
-$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-include_once __DIR__ . '/includes/header.php';
+require_once 'includes/header.php';
 ?>
 
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Résultats de recherche pour "<?= htmlspecialchars($query) ?>"</h1>
+    <h1 class="text-2xl font-bold text-rs-gray mb-6">
+        <?= empty($search_query) ? 'Recherche' : 'Résultats pour "' . $search_query . '"' ?>
+    </h1>
 
-    <?php if (empty($products)): ?>
-    <div class="text-center py-12">
-        <p class="text-gray-600">Aucun produit trouvé pour votre recherche.</p>
+    <!-- Search form for the search page -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <form action="<?= SITE_URL ?>/search.php" method="GET" class="flex">
+            <input type="text" name="q" value="<?= $search_query ?>" 
+                   placeholder="Rechercher des produits, des marques, des références..."
+                   class="flex-1 py-2 px-4 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-rs-red">
+            <button type="submit" class="bg-rs-red text-white px-6 py-2 rounded-r hover:bg-red-700 transition flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                Rechercher
+            </button>
+        </form>
     </div>
-    <?php else: ?>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <?php foreach ($products as $product): ?>
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <img src="<?= SITE_URL ?>/assets/images/products/<?= htmlspecialchars($product['reference']) ?>.jpg" 
-                 alt="<?= htmlspecialchars($product['name']) ?>" 
-                 class="w-full h-48 object-cover">
-            <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-sm text-gray-500"><?= htmlspecialchars($product['reference']) ?></span>
-                    <span class="text-sm font-medium <?= $product['stock'] > 0 ? 'text-green-600' : 'text-red-600' ?>">
-                        <?= $product['stock'] > 0 ? 'En stock' : 'Rupture de stock' ?>
-                    </span>
-                </div>
-                <h3 class="text-lg font-semibold text-rs-gray mb-2">
-                    <?= htmlspecialchars($product['name']) ?>
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                    <?= htmlspecialchars($product['brand_name']) ?>
-                </p>
-                <div class="flex justify-between items-center">
-                    <span class="text-lg font-bold text-rs-red">
-                        <?= number_format($product['price'], 2, ',', ' ') ?> €
-                    </span>
-                    <a href="?action=add&id=<?= $product['id'] ?>" 
-                       class="bg-rs-red text-white py-2 px-4 rounded hover:bg-red-700">
-                        Ajouter au panier
-                    </a>
-                </div>
+
+    <?php if (empty($search_query)): ?>
+        <!-- Display when no search query is provided -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-rs-gray mb-4">Catégories populaires</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="#" class="p-4 border rounded-lg hover:bg-rs-light-gray text-center">
+                    <span class="block font-medium">Composants électroniques</span>
+                </a>
+                <a href="#" class="p-4 border rounded-lg hover:bg-rs-light-gray text-center">
+                    <span class="block font-medium">Outillage</span>
+                </a>
+                <a href="#" class="p-4 border rounded-lg hover:bg-rs-light-gray text-center">
+                    <span class="block font-medium">Électricité</span>
+                </a>
+                <a href="#" class="p-4 border rounded-lg hover:bg-rs-light-gray text-center">
+                    <span class="block font-medium">Connectique</span>
+                </a>
             </div>
         </div>
-        <?php endforeach; ?>
-    </div>
-
-    <!-- Pagination -->
-    <?php if ($total_pages > 1): ?>
-    <div class="mt-8 flex justify-center">
-        <div class="flex gap-2">
-            <?php if ($page > 1): ?>
-            <a href="?q=<?= urlencode($query) ?>&page=<?= $page - 1 ?>" 
-               class="px-4 py-2 border rounded hover:bg-gray-100">
-                Précédent
-            </a>
-            <?php endif; ?>
-
-            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <a href="?q=<?= urlencode($query) ?>&page=<?= $i ?>" 
-               class="px-4 py-2 border rounded <?= $i === $page ? 'bg-rs-red text-white' : 'hover:bg-gray-100' ?>">
-                <?= $i ?>
-            </a>
-            <?php endfor; ?>
-
-            <?php if ($page < $total_pages): ?>
-            <a href="?q=<?= urlencode($query) ?>&page=<?= $page + 1 ?>" 
-               class="px-4 py-2 border rounded hover:bg-gray-100">
-                Suivant
-            </a>
-            <?php endif; ?>
+    <?php elseif (empty($products)): ?>
+        <!-- No results found -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <p class="text-gray-600">Aucun résultat trouvé pour "<?= $search_query ?>". Essayez d'autres termes de recherche.</p>
+            
+            <h3 class="text-lg font-medium mt-6 mb-3">Suggestions :</h3>
+            <ul class="list-disc pl-5 text-gray-600">
+                <li>Vérifiez l'orthographe des termes de recherche.</li>
+                <li>Essayez des mots-clés plus généraux.</li>
+                <li>Essayez d'autres catégories.</li>
+            </ul>
         </div>
-    </div>
-    <?php endif; ?>
+    <?php else: ?>
+        <!-- Display search results -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <?php foreach ($products as $product): ?>
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <div class="aspect-w-1 aspect-h-1 mb-4">
+                    <img src="<?= !empty($product['image']) ? $product['image'] : SITE_URL . '/public/images/placeholder.jpg' ?>" 
+                         alt="<?= htmlspecialchars($product['name']) ?>"
+                         class="object-contain w-full h-40">
+                </div>
+                <h3 class="font-medium text-lg mb-2">
+                    <a href="<?= SITE_URL ?>/product.php?id=<?= $product['id'] ?>" class="text-rs-gray hover:text-rs-red">
+                        <?= htmlspecialchars($product['name']) ?>
+                    </a>
+                </h3>
+                <p class="text-gray-600 text-sm mb-2">Réf. <?= htmlspecialchars($product['reference'] ?? 'N/A') ?></p>
+                <p class="text-rs-red font-bold mb-3">
+                    <?= htmlspecialchars(number_format($product['price'], 2, ',', ' ')) ?> €
+                </p>
+                <button class="w-full bg-rs-red text-white py-2 rounded hover:bg-red-700 transition">
+                    Ajouter au panier
+                </button>
+            </div>
+            <?php endforeach; ?>
+        </div>
     <?php endif; ?>
 </div>
 
-<?php include_once __DIR__ . '/includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?> 
