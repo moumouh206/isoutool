@@ -5,6 +5,24 @@ require_once 'includes/header.php';
 $message = '';
 $messageType = '';
 
+// Prepare session data for checkout
+function prepareCheckoutSession($cartItems) {
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+    
+    foreach ($cartItems as $item) {
+        $_SESSION['cart'][$item['product_id']] = [
+            'product_id' => $item['product_id'],
+            'name' => $item['name'],
+            'price' => $item['price'],
+            'quantity' => $item['quantity'],
+            'total_price' => $item['total_price'],
+            'reference' => $item['reference']
+        ];
+    }
+}
+
 // Handle cart actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -168,7 +186,7 @@ $cartTotal = $cart->getTotal();
                                 <span>€<?php echo number_format($cartTotal, 2); ?></span>
                             </div>
                         </div>
-                        <a href="checkout.php" class="block w-full bg-blue-500 text-white text-center px-6 py-3 rounded-md hover:bg-blue-600">
+                        <a href="prepare-checkout.php" class="block w-full bg-blue-500 text-white text-center px-6 py-3 rounded-md hover:bg-blue-600">
                             Proceed to Checkout
                         </a>
                     </div>
@@ -178,4 +196,4 @@ $cartTotal = $cart->getTotal();
     <?php endif; ?>
 </div>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>

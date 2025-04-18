@@ -2,10 +2,52 @@
 require_once 'includes/init.php';
 require_once 'includes/header.php';
 
+// Debugging logs
+error_log("Checkout page accessed");
+
+// Check database connection
+if (!isset($db)) {
+    error_log("Database connection is not initialized.");
+} else {
+    error_log("Database connection is active.");
+}
+
+// Check session data
+if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
+    error_log("Cart is empty or not set.");
+} else {
+    error_log("Cart contains " . count($_SESSION['cart']) . " items.");
+}
+
+if (!isset($_SESSION['user_id'])) {
+    error_log("User ID is not set in session.");
+} else {
+    error_log("User ID: " . $_SESSION['user_id']);
+}
+
 // Redirect to cart if it's empty
 if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
     header('Location: cart.php');
     exit;
+}
+
+// Log POST data
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log("POST data: " . print_r($_POST, true));
+}
+
+// Log cart details
+if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+    error_log("Cart details: " . print_r($_SESSION['cart'], true));
+}
+
+// Log database queries and results
+try {
+    $stmt = $db->prepare('SELECT 1');
+    $stmt->execute();
+    error_log("Database query test successful.");
+} catch (Exception $e) {
+    error_log("Database query test failed: " . $e->getMessage());
 }
 
 // Initialize variables
@@ -32,37 +74,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // If no errors, process the order
     if (empty($errors)) {
+        error_log("Starting order processing...");
         try {
             $db->beginTransaction();
+            error_log("Transaction started.");
             
             // Create order
+            // Generate a unique order number with year, month, day and random digits
+            $order_number = 'ORD-' . date('Ymd') . '-' . mt_rand(1000, 9999);
+            
             $stmt = $db->prepare('
                 INSERT INTO orders (
-                    user_id, order_date, shipping_name, shipping_address, 
-                    shipping_city, shipping_state, shipping_zip, shipping_country,
-                    billing_name, billing_address, billing_city, billing_state,
-                    billing_zip, billing_country, total_amount, status
-                ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    user_id, order_number, created_at, shipping_address_line_1, 
+                    shipping_city, shipping_postal_code, shipping_country,
+                    billing_address_line_1, billing_city, 
+                    billing_postal_code, billing_country, total, status
+                ) VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ');
             
+            // Log total calculation
             $total = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $total += $item['price'] * $item['quantity'];
             }
+            error_log("Total amount calculated: $total");
             
             $user_id = $_SESSION['user_id'] ?? null;
             $stmt->execute([
                 $user_id,
-                $data['shipping_name'],
+                $order_number,
                 $data['shipping_address'],
                 $data['shipping_city'],
-                $data['shipping_state'],
                 $data['shipping_zip'],
                 $data['shipping_country'],
-                $data['billing_name'],
                 $data['billing_address'],
                 $data['billing_city'],
-                $data['billing_state'],
                 $data['billing_zip'],
                 $data['billing_country'],
                 $total,
@@ -77,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare('SELECT stock FROM products WHERE id = ? FOR UPDATE');
                 $stmt->execute([$product_id]);
                 $product = $stmt->fetch();
+                error_log("Stock for product $product_id: " . print_r($product, true));
                 
                 if (!$product || $product['stock'] < $item['quantity']) {
                     throw new Exception('Insufficient stock for one or more items');
@@ -105,18 +152,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $db->commit();
+            error_log("Order processing completed successfully.");
             $success = true;
             
-            // Clear the cart
+            // Save order number in session for the confirmation page
+            $_SESSION['last_order_number'] = $order_number;
+            
+            // Clear the cart completely
             unset($_SESSION['cart']);
+            if (isset($cart)) {
+                $cart->clear(); // Also clear cart from database if using Cart class
+            }
             
             // Redirect to order confirmation
-            header("Location: order-confirmation.php?order_id=" . $order_id);
+            header("Location: order-confirmation.php?order=" . $order_number);
             exit;
             
         } catch (Exception $e) {
             $db->rollBack();
+            error_log("Order processing failed: " . $e->getMessage());
             $errors[] = 'Order processing failed: ' . $e->getMessage();
+        }
+    }
+    
+    // Log errors during order processing
+    if (!empty($errors)) {
+        foreach ($errors as $error) {
+            error_log("Error: " . $error);
         }
     }
 }
@@ -286,4 +348,4 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
     </div>
 </div>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>

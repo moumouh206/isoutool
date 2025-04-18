@@ -36,6 +36,18 @@ try {
     ');
     $stmt->execute([$order_id]);
     $order = $stmt->fetch();
+    
+    // Get order items
+    if ($order) {
+        $stmt = $db->prepare('
+            SELECT oi.*, p.name as product_name, p.reference
+            FROM order_items oi
+            LEFT JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+        ');
+        $stmt->execute([$order_id]);
+        $orderItems = $stmt->fetchAll();
+    }
 } catch (PDOException $e) {
     $error = "Erreur lors de la récupération des détails de la commande : " . $e->getMessage();
 }
@@ -187,4 +199,4 @@ try {
     </div>
 </div>
 
-<?php require_once '../includes/footer.php'; ?> 
+<?php require_once '../includes/footer.php'; ?>

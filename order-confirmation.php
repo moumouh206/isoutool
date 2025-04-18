@@ -2,8 +2,6 @@
 require_once 'database/db_connect.php';
 require_once 'includes/header.php';
 
-session_start();
-
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: auth/login.php');
@@ -158,4 +156,4 @@ try {
     </div>
 </div>
 
-<?php require_once 'includes/footer.php'; ?> 
+<?php require_once 'includes/footer.php'; ?>
