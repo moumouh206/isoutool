@@ -73,47 +73,160 @@ try {
 </div>
 <?php endif; ?>
 
-<div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-    <h2 class="text-2xl font-semibold mb-4">Détails de la commande</h2>
+<div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-6">
+    <h2 class="text-2xl font-semibold mb-4">Détails de la commande #<?= htmlspecialchars($order['order_number']) ?></h2>
 
-    <div class="grid grid-cols-1 gap-6">
-        <div>
-            <label for="client" class="block text-sm font-medium text-gray-700">Client</label>
-            <div class="mt-1 text-sm text-gray-500">
-                <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Customer Information -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Informations client</h3>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nom complet</label>
+                <div class="mt-1 text-sm text-gray-900">
+                    <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <div class="mt-1 text-sm text-gray-900">
+                    <?= htmlspecialchars($order['email']) ?>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Date de commande</label>
+                <div class="mt-1 text-sm text-gray-900">
+                    <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Status and Update -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Mise à jour du statut</h3>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Statut actuel</label>
+                <div class="mt-1">
+                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                        <?= $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : 
+                           ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                           ($order['status'] === 'canceled' ? 'bg-red-100 text-red-800' :
+                           ($order['status'] === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                           'bg-gray-100 text-gray-800'))) ?>">
+                        <?= ucfirst($order['status']) ?>
+                    </span>
+                </div>
+            </div>
+            
+            <form method="POST">
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">Nouveau statut</label>
+                    <select name="status" id="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="pending" <?= $order['status'] === 'pending' ? 'selected' : '' ?>>En attente</option>
+                        <option value="processing" <?= $order['status'] === 'processing' ? 'selected' : '' ?>>En cours</option>
+                        <option value="shipped" <?= $order['status'] === 'shipped' ? 'selected' : '' ?>>Expédié</option>
+                        <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Terminé</option>
+                        <option value="canceled" <?= $order['status'] === 'canceled' ? 'selected' : '' ?>>Annulé</option>
+                    </select>
+                </div>
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Mettre à jour le statut
+                </button>
+            </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Résumé financier</h3>
+            
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-700">Sous-total :</span>
+                <span class="text-sm font-medium"><?= number_format($order['subtotal'] ?? $order['total'], 2, ',', ' ') ?> €</span>
+            </div>
+            
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-700">Frais de livraison :</span>
+                <span class="text-sm font-medium"><?= number_format($order['shipping'] ?? 0, 2, ',', ' ') ?> €</span>
+            </div>
+            
+            <div class="flex justify-between">
+                <span class="text-sm text-gray-700">TVA :</span>
+                <span class="text-sm font-medium"><?= number_format($order['tax'] ?? 0, 2, ',', ' ') ?> €</span>
+            </div>
+            
+            <div class="flex justify-between border-t pt-2">
+                <span class="text-base font-bold">Total :</span>
+                <span class="text-base font-bold"><?= number_format($order['total'], 2, ',', ' ') ?> €</span>
             </div>
         </div>
         
-        <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <div class="mt-1 text-sm text-gray-500">
-                <?= htmlspecialchars($order['email']) ?>
+        <!-- Payment Information -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Informations de paiement</h3>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Méthode de paiement</label>
+                <div class="mt-1 text-sm text-gray-900">
+                    <?= !empty($order['payment_method']) ? htmlspecialchars($order['payment_method']) : 'Non spécifié' ?>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Statut du paiement</label>
+                <div class="mt-1">
+                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full
+                        <?= ($order['payment_status'] ?? '') === 'paid' ? 'bg-green-100 text-green-800' : 
+                           (($order['payment_status'] ?? '') === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                           'bg-gray-100 text-gray-800') ?>">
+                        <?= ucfirst($order['payment_status'] ?? 'pending') ?>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shipping and Billing Information -->
+<div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-6">
+    <h2 class="text-2xl font-semibold mb-4">Adresses</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Shipping Address -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Adresse de livraison</h3>
+            
+            <div class="text-sm text-gray-900">
+                <p class="font-medium">Adresse :</p>
+                <p><?= htmlspecialchars($order['shipping_address_line_1'] ?? 'Non spécifié') ?></p>
+                <?php if (!empty($order['shipping_address_line_2'])): ?>
+                    <p><?= htmlspecialchars($order['shipping_address_line_2']) ?></p>
+                <?php endif; ?>
+                <p>
+                    <?= htmlspecialchars($order['shipping_postal_code'] ?? '') ?>
+                    <?= htmlspecialchars($order['shipping_city'] ?? 'Non spécifié') ?>
+                </p>
+                <p><?= htmlspecialchars($order['shipping_country'] ?? 'Non spécifié') ?></p>
             </div>
         </div>
         
-        <div>
-            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-            <div class="mt-1 text-sm text-gray-500">
-                <?= date('d/m/Y H:i', strtotime($order['created_at'])) ?>
-            </div>
-        </div>
-        
-        <div>
-            <label for="status" class="block text-sm font-medium text-gray-700">Statut</label>
-            <div class="mt-1 text-sm text-gray-500">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    <?= $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : 
-                       ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                       'bg-gray-100 text-gray-800') ?>">
-                    <?= ucfirst($order['status']) ?>
-                </span>
-            </div>
-        </div>
-        
-        <div>
-            <label for="total" class="block text-sm font-medium text-gray-700">Total</label>
-            <div class="mt-1 text-sm font-medium text-gray-900">
-                <?= number_format($order['total'], 2, ',', ' ') ?> €
+        <!-- Billing Address -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium border-b pb-2">Adresse de facturation</h3>
+            
+            <div class="text-sm text-gray-900">
+                <p class="font-medium">Adresse :</p>
+                <p><?= htmlspecialchars($order['billing_address_line_1'] ?? 'Non spécifié') ?></p>
+                <?php if (!empty($order['billing_address_line_2'])): ?>
+                    <p><?= htmlspecialchars($order['billing_address_line_2']) ?></p>
+                <?php endif; ?>
+                <p>
+                    <?= htmlspecialchars($order['billing_postal_code'] ?? '') ?>
+                    <?= htmlspecialchars($order['billing_city'] ?? 'Non spécifié') ?>
+                </p>
+                <p><?= htmlspecialchars($order['billing_country'] ?? 'Non spécifié') ?></p>
             </div>
         </div>
     </div>
